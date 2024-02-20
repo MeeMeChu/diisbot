@@ -43,7 +43,7 @@ export default function Forms() {
                 "urgency": urgency,
                 "_disablenotif" : true
             }
-        } 
+        }
         axios.post(urls, data, {
             headers: {
                 'App-Token' : 'EHlx1ZbY2T1nChtbiNXbdfekzAjvsCtUjEjn8POY',
@@ -66,7 +66,6 @@ export default function Forms() {
                 'App-Token': 'EHlx1ZbY2T1nChtbiNXbdfekzAjvsCtUjEjn8POY',
              }
          }).then((response) => {
-            console.log(response.data.session_token)
             setSession(response.data.session_token)
          }) 
         const initializeLiff = async () => {
