@@ -29,7 +29,9 @@ exports.LineBot = onRequest((req, res) => {
   if (req.body.events[0].message.type !== 'text') {
     return;
   }
-  reply(req.body);
+  if (req.body.events[0].message.text === 'ทดสอบ') {
+    reply(req.body);
+  }
 });
 
 const reply = (bodyResponse) => {
@@ -42,9 +44,9 @@ const reply = (bodyResponse) => {
       messages: [
         {
           type: `text`,
-          text: bodyResponse.events[0].message.text
+          text: `ข้อมูลจ้า ข้อมูล!! ${bodyResponse.events[0].source.userId}`
         }
-	  ]
+	    ]
     })
   });
 };
