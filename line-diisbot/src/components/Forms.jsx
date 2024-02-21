@@ -12,7 +12,8 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-
+import Swal from 'sweetalert2'
+import database from './FirebaseConfig'
 // TODO remove, this demo shouldn't need to reset the theme.
 
 const defaultTheme = createTheme();
@@ -30,33 +31,79 @@ export default function Forms() {
     const password = 'glpi' 
 
     const liff = window.liff;
-    
-    const postTicket = (event) => {
+
+    const postTicket = async (event) => {
         event.preventDefault();
         const urls = 'http://167.172.85.155/apirest.php/Ticket'
         const data = {
-            "input" : {
+            "input": {
                 "name": title,
                 "itilcategories_id": category,
                 "content": description,
-                "status" : '1',
+                "status": '1',
                 "urgency": urgency,
-                "_disablenotif" : true
+                "_disablenotif": true
             }
         }
-        axios.post(urls, data, {
-            headers: {
-                'App-Token' : 'EHlx1ZbY2T1nChtbiNXbdfekzAjvsCtUjEjn8POY',
-                'Content-Type': 'application/json',
-                'Session-token' : session
-            }
-        }).then((res) => {
-            setTicket(res.data.id)
-            database.ref("User/" + userLineID).set({
+
+        try {
+            const res = await axios.post(urls, data, {
+                headers: {
+                    'App-Token': 'EHlx1ZbY2T1nChtbiNXbdfekzAjvsCtUjEjn8POY',
+                    'Content-Type': 'application/json',
+                    'Session-token': session
+                }
+            });
+
+            setTicket(res.data.id);
+
+            await database.ref("User/" + userLineID).set({
                 ticket_id: ticket
-            }).catch(alert);
-        })
+            });
+
+            Swal.fire({
+                title: "ทำรายการสำเร็จ",
+                text: "ส่งข้อมูลเรียบร้อยแล้ว!",
+                icon: "success"
+            });
+        } catch (error) {
+            alert(error);
+        }
     };
+
+    // const postTicket = (event) => {
+    //     event.preventDefault();
+    //     const urls = 'http://167.172.85.155/apirest.php/Ticket'
+    //     const data = {
+    //         "input" : {
+    //             "name": title,
+    //             "itilcategories_id": category,
+    //             "content": description,
+    //             "status" : '1',
+    //             "urgency": urgency,
+    //             "_disablenotif" : true
+    //         }
+    //     }
+    //     axios.post(urls, data, {
+    //         headers: {
+    //             'App-Token' : 'EHlx1ZbY2T1nChtbiNXbdfekzAjvsCtUjEjn8POY',
+    //             'Content-Type': 'application/json',
+    //             'Session-token' : session
+    //         }
+    //     }).then((res) => {
+    //         setTicket(res.data.id);
+
+    //         database.ref("User/" + userLineID).set({
+    //             ticket_id: ticket
+    //         }).catch(alert);
+
+    //         Swal.fire({
+    //             title: "ทำรายการสำเร็จ",
+    //             text: "ส่งข้อมูลเรียบร้อยแล้ว!",
+    //             icon: "success"
+    //         });
+    //     })
+    // };
 
     useEffect( () => {
         axios.get('http://167.172.85.155/apirest.php/initSession', {
@@ -70,11 +117,10 @@ export default function Forms() {
          }) 
         const initializeLiff = async () => {
             try {
-                await liff.init({ liffId: '2003023969-d3W28RJB' });
+                await liff.init({ liffId: '2003711805-VkQ1lj9R' });
                 if (liff.isLoggedIn()) {
                     let getProfile = await liff.getProfile();
                     setUserLineID(getProfile.userId);
-                    console.log('Line user ID:', getProfile.userId);
                 } else {
                     liff.login();
                 }
@@ -99,7 +145,7 @@ export default function Forms() {
                     }}
                 >
                     <Typography component="h1" variant="h5">
-                        กรอกคำร้อง {session}
+                        {ticket} กรอกคำร้อง {session} 
                     </Typography>
                     <Box component="form" onSubmit={postTicket} sx={{ mt: 1 }}>
                         <TextField

@@ -1,7 +1,7 @@
-import firebase from 'firebase'
+import firebase from 'firebase';
 
 const FirebaseConfig = {
-    projectId: 'diisbot',
+    projectId: "diisbot",
     databaseURL: "https://diisbot-default-rtdb.asia-southeast1.firebasedatabase.app/",
 };
 
