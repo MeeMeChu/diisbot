@@ -17,7 +17,10 @@
 // const logger = require("firebase-functions/logger");
 
 const { onRequest } = require("firebase-functions/v2/https");
+const admin = require("firebase-admin");
 const request = require('request-promise');
+
+admin.initializeApp();
 
 const LINE_MESSAGING_API = 'https://api.line.me/v2/bot/message';
 const LINE_HEADER = {
@@ -35,19 +38,26 @@ exports.LineBot = onRequest((req, res) => {
 });
 
 const reply = (bodyResponse) => {
-  return request({
-    method: `POST`,
-    uri: `${LINE_MESSAGING_API}/reply`,
-    headers: LINE_HEADER,
-    body: JSON.stringify({
-      replyToken: bodyResponse.events[0].replyToken,
-      messages: [
-        {
-          type: `text`,
-          text: `ข้อมูลจ้า ข้อมูล!! ${bodyResponse.events[0].source.userId}`
-        }
-	    ]
-    })
-  });
+  const database = admin.database().ref("/Users");
+  database.once('value', (snapshot) => {
+    const data = snapshot.val();
+    const arrsData = Object.entries(data);
+    return request({
+      method: `POST`,
+      uri: `${LINE_MESSAGING_API}/reply`,
+      headers: LINE_HEADER,
+      body: JSON.stringify({
+        replyToken: bodyResponse.events[0].replyToken,
+        messages: [
+          {
+            type: `text`,
+            text: `ข้อมูลจ้า ข้อมูล!! ${bodyResponse.events[0].source.userId}\n${arrsData.map((val) => {
+              {val.ticket}
+            })}`
+          }
+        ]
+      })
+    });
+  })
 };
 
