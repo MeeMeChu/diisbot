@@ -19,6 +19,7 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
 const request = require('request-promise');
+const { object } = require("firebase-functions/v1/storage");
 
 admin.initializeApp();
 
@@ -41,7 +42,7 @@ const reply = (bodyResponse) => {
   const database = admin.database().ref("/Users");
   database.once('value', (snapshot) => {
     const data = snapshot.val();
-    const arrsData = Object.entries(data);
+    const arrsData = Object.values(data);
     return request({
       method: `POST`,
       uri: `${LINE_MESSAGING_API}/reply`,
@@ -51,8 +52,10 @@ const reply = (bodyResponse) => {
         messages: [
           {
             type: `text`,
-            text: `ข้อมูลจ้า ข้อมูล!! ${bodyResponse.events[0].source.userId}\n${arrsData.map((val) => {
-              {val.ticket}
+            text: `ข้อมูลจ้า ข้อมูล!! ${bodyResponse.events[0].source.userId}\n ${arrsData.map((item) => {
+              return (
+                `Ticket : ${item.ticket}`
+              )
             })}`
           }
         ]
