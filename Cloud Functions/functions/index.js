@@ -19,7 +19,6 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
 const request = require('request-promise');
-const { object } = require("firebase-functions/v1/storage");
 
 admin.initializeApp();
 
@@ -39,7 +38,7 @@ exports.LineBot = onRequest((req, res) => {
 });
 
 const reply = (bodyResponse) => {
-  const database = admin.database().ref("/Users");
+  const database = admin.database().ref("/User");
   database.once('value', (snapshot) => {
     const data = snapshot.val();
     const arrsData = Object.values(data);
@@ -52,11 +51,12 @@ const reply = (bodyResponse) => {
         messages: [
           {
             type: `text`,
-            text: `ข้อมูลจ้า ข้อมูล!! ${bodyResponse.events[0].source.userId}\n ${arrsData.map((item) => {
-              return (
-                `Ticket : ${item.ticket}`
-              )
-            })}`
+            text: `${JSON.stringify(arrsData)}`
+            // text: `ข้อมูลจ้า ข้อมูล!! ${bodyResponse.events[0].source.userId}\n ${arrsData.map((item) => {
+            //   return (
+            //     `Ticket : ${item.ticket}`
+            //   )
+            // })}`
           }
         ]
       })
