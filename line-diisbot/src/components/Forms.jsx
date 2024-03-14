@@ -23,7 +23,7 @@ export default function Forms() {
     const [category, setCategory] = useState('');
     const [urgency, setUrgency] = useState('');
     const [session, setSession] = useState('');
-    const [ticket, setTicket] = useState('');
+    const [ticket, setTicket] = useState([]);
     const [userLineID, setUserLineID] = useState('');
 
     //REST API GET
@@ -55,13 +55,11 @@ export default function Forms() {
                 }
             });
 
-            setTicket(res.data.id);
-            
-            await database.ref("User/" + userLineID).push({
-                ticket_id: res.data.id
-            });
+            setTicket([...ticket ,res.data.id]);
 
-            setTicket(res.data.id);
+            const ticketRef = database.ref("User/" + userLineID + "/ticket_id");
+            ticketRef.set(ticket);
+            console.log(ticket);
 
             Swal.fire({
                 title: "ทำรายการสำเร็จ",
@@ -137,6 +135,22 @@ export default function Forms() {
         };
 
         initializeLiff();
+
+        const fetchTicket = async () => {
+            const ref = database.ref("User/" + userLineID);
+
+            ref.once('value', (snapshot) => {
+                const data = snapshot.val();
+                console.log(data)
+                if (snapshot.exists()) {
+                    Object.values(data).map((val) => {
+                        setTicket((ticket) => [...ticket, val]);
+                    });
+                    console.log(ticket)
+                }
+            });
+        };
+        fetchTicket();
     }, []);
  
     return (
@@ -152,7 +166,7 @@ export default function Forms() {
                     }}
                 >
                     <Typography component="h1" variant="h5">
-                        {ticket} กรอกคำร้อง {session} 
+                        {ticket} กรอกคำร้อง {userLineID}
                     </Typography>
                     <Box component="form" sx={{ mt: 1 }}>
                         <TextField

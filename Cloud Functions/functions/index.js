@@ -39,9 +39,9 @@ exports.LineBot = onRequest((req, res) => {
 
 const reply = (bodyResponse) => {
   const database = admin.database().ref("/User");
+  const userID = bodyResponse.events[0].source.userId
   database.once('value', (snapshot) => {
     const data = snapshot.val();
-    const arrsData = Object.values(data);
     return request({
       method: `POST`,
       uri: `${LINE_MESSAGING_API}/reply`,
@@ -51,12 +51,7 @@ const reply = (bodyResponse) => {
         messages: [
           {
             type: `text`,
-            text: `${JSON.stringify(arrsData)}`
-            // text: `ข้อมูลจ้า ข้อมูล!! ${bodyResponse.events[0].source.userId}\n ${arrsData.map((item) => {
-            //   return (
-            //     `Ticket : ${item.ticket}`
-            //   )
-            // })}`
+            text: `${JSON.stringify(data)} และ ${userID}`
           }
         ]
       })
