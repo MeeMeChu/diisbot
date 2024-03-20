@@ -16,8 +16,8 @@ import Swal from 'sweetalert2'
 import database from './FirebaseConfig'
 
 const defaultTheme = createTheme();
-    
-export default function Forms() {   
+
+export default function Forms() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [category, setCategory] = useState('');
@@ -25,10 +25,11 @@ export default function Forms() {
     const [session, setSession] = useState('');
     const [ticket, setTicket] = useState([]);
     const [userLineID, setUserLineID] = useState('');
+    var ref = null;
 
     //REST API GET
     const username = 'glpi'
-    const password = 'glpi' 
+    const password = 'glpi'
 
     const liff = window.liff;
 
@@ -55,11 +56,12 @@ export default function Forms() {
                 }
             });
 
-            setTicket([...ticket ,res.data.id]);
+            setTicket([...ticket, res.data.id]);
+            console.log("Ticket: ", ticket);
 
             const ticketRef = database.ref("User/" + userLineID + "/ticket_id");
-            ticketRef.set(ticket);
-            console.log(ticket);
+            // ticketRef.set("Hello world");
+            ticketRef.set(ticketRef);
 
             Swal.fire({
                 title: "ทำรายการสำเร็จ",
@@ -110,49 +112,49 @@ export default function Forms() {
     //     })
     // };
 
-    useEffect( () => {
+    useEffect(() => {
         axios.get('https://glpi.streamsouth.tech/apirest.php/initSession', {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': "Basic " + btoa(username + ':' + password),
                 'App-Token': 'EHlx1ZbY2T1nChtbiNXbdfekzAjvsCtUjEjn8POY',
-             }
-         }).then((response) => {
+            }
+        }).then((response) => {
             setSession(response.data.session_token)
-         }) 
+        })
+
         const initializeLiff = async () => {
-            try {
+            // try {
                 await liff.init({ liffId: '2003711805-VkQ1lj9R' });
                 if (liff.isLoggedIn()) {
                     let getProfile = await liff.getProfile();
                     setUserLineID(getProfile.userId);
+
+                    const fetchTicket = async () => {
+                        ref = database.ref("User/" + userLineID);
+
+                        ref.once('value', (snapshot) => {
+                            const data = snapshot.val();
+                            if (data) {
+                                const ticketValue = data.ticket_id
+                                console.log("Look ticket: ", ticketValue)
+                                setTicket(ticketValue)
+                            }
+                        });
+                    };
+                    fetchTicket();
                 } else {
                     liff.login();
                 }
-            } catch (error) {
-                console.error('Error initializing LIFF:', error);
-            }
+            // } catch (error) {
+            //     console.error('Error initializing LIFF:', error);
+            // }
+
         };
 
         initializeLiff();
+    }, [userLineID]);
 
-        const fetchTicket = async () => {
-            const ref = database.ref("User/" + userLineID);
-
-            ref.once('value', (snapshot) => {
-                const data = snapshot.val();
-                console.log(data)
-                if (snapshot.exists()) {
-                    Object.values(data).map((val) => {
-                        setTicket((ticket) => [...ticket, val]);
-                    });
-                    console.log(ticket)
-                }
-            });
-        };
-        fetchTicket();
-    }, []);
- 
     return (
         <ThemeProvider theme={defaultTheme}>
             <Container component="main" maxWidth="sm">
