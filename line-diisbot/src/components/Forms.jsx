@@ -25,7 +25,7 @@ export default function Forms() {
     const [session, setSession] = useState('');
     const [ticket, setTicket] = useState([]);
     const [userLineID, setUserLineID] = useState('');
-    var ref = null;
+    var ref = database.ref("User/" + userLineID);
 
     //REST API GET
     const username = 'glpi'
@@ -59,15 +59,16 @@ export default function Forms() {
             setTicket([...ticket, res.data.id]);
             console.log("Ticket: ", ticket);
 
-            const ticketRef = database.ref("User/" + userLineID + "/ticket_id");
-            // ticketRef.set("Hello world");
-            ticketRef.set(ticketRef);
+            ref.set({
+                ticket_id : ticket
+            });
 
             Swal.fire({
                 title: "ทำรายการสำเร็จ",
                 text: "ส่งข้อมูลเรียบร้อยแล้ว!",
                 icon: "success"
             });
+
         } catch (error) {
             alert(error);
             Swal.fire({
@@ -77,40 +78,6 @@ export default function Forms() {
             });
         }
     };
-
-    // const postTicket = (event) => {
-    //     event.preventDefault();
-    //     const urls = 'https://glpi.streamsouth.tech/apirest.php/Ticket'
-    //     const data = {
-    //         "input" : {
-    //             "name": title,
-    //             "itilcategories_id": category,
-    //             "content": description,
-    //             "status" : '1',
-    //             "urgency": urgency,
-    //             "_disablenotif" : true
-    //         }
-    //     }
-    //     axios.post(urls, data, {
-    //         headers: {
-    //             'App-Token' : 'EHlx1ZbY2T1nChtbiNXbdfekzAjvsCtUjEjn8POY',
-    //             'Content-Type': 'application/json',
-    //             'Session-token' : session
-    //         }
-    //     }).then((res) => {
-    //         setTicket(res.data.id);
-
-    //         database.ref("User/" + userLineID).push({
-    //             ticket_id: ticket
-    //         }).catch(alert);
-
-    //         Swal.fire({
-    //             title: "ทำรายการสำเร็จ",
-    //             text: "ส่งข้อมูลเรียบร้อยแล้ว!",
-    //             icon: "success"
-    //         });
-    //     })
-    // };
 
     useEffect(() => {
         axios.get('https://glpi.streamsouth.tech/apirest.php/initSession', {
@@ -131,8 +98,6 @@ export default function Forms() {
                     setUserLineID(getProfile.userId);
 
                     const fetchTicket = async () => {
-                        ref = database.ref("User/" + userLineID);
-
                         ref.once('value', (snapshot) => {
                             const data = snapshot.val();
                             if (data) {
