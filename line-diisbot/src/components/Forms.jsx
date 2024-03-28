@@ -49,7 +49,7 @@ export default function Forms() {
             }
         }
 
-      //  try {
+        try {
             const res = await axios.post(urls, data, {
                 headers: {
                     'App-Token': 'EHlx1ZbY2T1nChtbiNXbdfekzAjvsCtUjEjn8POY',
@@ -80,14 +80,13 @@ export default function Forms() {
                 icon: "success"
             });
 
-            //   } catch (error) {
-            //      Swal.fire({
-            //          icon: "error",
-            //         title: "ไม่สามารถทำรายการได้!",
-            //        text: "มีบางอย่างผิดพลาด!",
-        //});
-
-      //  }
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "ไม่สามารถทำรายการได้!",
+            text: "มีบางอย่างผิดพลาด!",
+            });
+        }
     };
 
     useEffect(() => {        
