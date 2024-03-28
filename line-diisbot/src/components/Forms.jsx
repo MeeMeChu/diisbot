@@ -18,14 +18,16 @@ import database from './FirebaseConfig'
 const defaultTheme = createTheme();
 
 export default function Forms() {
+    // Form
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [category, setCategory] = useState('');
     const [urgency, setUrgency] = useState('');
+    // Post
     const [session, setSession] = useState('');
-    const [ticket, setTicket] = useState([]);
+    // Line userID
     const [userLineID, setUserLineID] = useState('');
-    var ref = database.ref("User/" + userLineID);
+
 
     //REST API GET
     const username = 'glpi'
@@ -47,7 +49,7 @@ export default function Forms() {
             }
         }
 
-        try {
+      //  try {
             const res = await axios.post(urls, data, {
                 headers: {
                     'App-Token': 'EHlx1ZbY2T1nChtbiNXbdfekzAjvsCtUjEjn8POY',
@@ -56,32 +58,39 @@ export default function Forms() {
                 }
             });
 
-            setTicket([...ticket, res.data.id]);
-            console.log("Ticket: ", ticket);
+            let ticket_number = res.data.id
+            
+            // Set Array in Realtime database
+            const refFirebase = database.ref("User/" + userLineID);
+            refFirebase.once("value", (snapshot) => {
 
-            ref.set({
-                ticket_id : ticket
+                const data = snapshot.val();
+                var ticketArray = [];
+                
+                if (data) {
+                    ticketArray = data.ticket_id;
+                }
+                ticketArray.push(ticket_number);
+                refFirebase.child("ticket_id").set(ticketArray);
             });
-
+            
             Swal.fire({
                 title: "ทำรายการสำเร็จ",
                 text: "ส่งข้อมูลเรียบร้อยแล้ว!",
                 icon: "success"
             });
 
-        } catch (error) {
+            //   } catch (error) {
+            //      Swal.fire({
+            //          icon: "error",
+            //         title: "ไม่สามารถทำรายการได้!",
+            //        text: "มีบางอย่างผิดพลาด!",
+        //});
 
-            alert(error);
-            Swal.fire({
-                icon: "error",
-                title: "ไม่สามารถทำรายการได้!",
-                text: "มีบางอย่างผิดพลาด!",
-            });
-            
-        }
+      //  }
     };
 
-    useEffect(() => {
+    useEffect(() => {        
         axios.get('https://glpi.streamsouth.tech/apirest.php/initSession', {
             headers: {
                 'Content-Type': 'application/json',
@@ -93,34 +102,17 @@ export default function Forms() {
         })
 
         const initializeLiff = async () => {
-            // try {
-                await liff.init({ liffId: '2003711805-VkQ1lj9R' });
-                if (liff.isLoggedIn()) {
-                    let getProfile = await liff.getProfile();
-                    setUserLineID(getProfile.userId);
-
-                    const fetchTicket = async () => {
-                        ref.once('value', (snapshot) => {
-                            const data = snapshot.val();
-                            if (data) {
-                                const ticketValue = data.ticket_id
-                                console.log("Look ticket: ", ticketValue)
-                                setTicket(ticketValue)
-                            }
-                        });
-                    };
-                    fetchTicket();
-                } else {
-                    liff.login();
-                }
-            // } catch (error) {
-            //     console.error('Error initializing LIFF:', error);
-            // }
-
+            await liff.init({ liffId: '2003711805-VkQ1lj9R' });
+            if (liff.isLoggedIn()) {
+                let getProfile = await liff.getProfile();
+                setUserLineID(getProfile.userId);
+            } else {
+                liff.login();
+            }
         };
 
         initializeLiff();
-    }, [userLineID]);
+    }, []);
 
     return (
         <ThemeProvider theme={defaultTheme}>
@@ -135,12 +127,12 @@ export default function Forms() {
                     }}
                 >
                     <Typography component="h1" variant="h5">
-                        {ticket} กรอกคำร้อง {userLineID}
+                        กรอกคำร้อง {userLineID}
                     </Typography>
-                    <Box component="form" sx={{ mt: 1 }}>
+                    <Box component="form" sx={{ mt: 1 }} onSubmit={postTicket}>
                         <TextField
                             margin="normal"
-                            required
+                            required={true}
                             fullWidth
                             id="title"
                             label="ชื่อคำร้อง"
@@ -157,7 +149,7 @@ export default function Forms() {
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
                                 label="Categories"
-                                required
+                                required={true}
                             >
                                 <MenuItem value="">
                                     <em>None</em>
@@ -171,7 +163,7 @@ export default function Forms() {
                             id="desciption"
                             label="รายละเอียด"
                             multiline
-                            required
+                            required={true}
                             fullWidth
                             value={description}
                             margin="normal"
@@ -184,7 +176,7 @@ export default function Forms() {
                                 labelId="urgency"
                                 id="urgency"
                                 value={urgency}
-                                required
+                                required={true}
                                 onChange={(e) => setUrgency(e.target.value)}
                                 label="ระดับความเร่งด่วน"
                             >
@@ -203,7 +195,6 @@ export default function Forms() {
                             fullWidth
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={postTicket}
                         >
                             Submit
                         </Button>
