@@ -70,12 +70,14 @@ export default function Forms() {
             });
 
         } catch (error) {
+
             alert(error);
             Swal.fire({
                 icon: "error",
                 title: "ไม่สามารถทำรายการได้!",
                 text: "มีบางอย่างผิดพลาด!",
             });
+            
         }
     };
 
